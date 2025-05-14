@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            padding: 4px 8px;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Expense Calculator</h1>
+        
+        <div class="input-row">
+            <input type="text" id="category" placeholder="Category">
+            <input type="number" id="amount" placeholder="Amount ($)">
+            <button onclick="addExpense()">Add Expense</button>
+        </div>
+
+        <table id="expenseTable">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Amount ($)</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="expenseBody"></tbody>
+        </table>
+
+        <button onclick="calculateExpenses()">Calculate</button>
+
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        let expenses = [];
+
+        function addExpense() {
+            const category = document.getElementById('category').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+
+            if (!category || isNaN(amount)) {
+                alert('Please enter valid category and amount');
+                return;
+            }
+
+            expenses.push({ category, amount });
+            updateTable();
+            clearInputs();
+        }
+
+        function clearInputs() {
+            document.getElementById('category').value = '';
+            document.getElementById('amount').value = '';
+        }
+
+        function deleteExpense(index) {
+            expenses.splice(index, 1);
+            updateTable();
+        }
+
+        function updateTable() {
+            const tbody = document.getElementById('expenseBody');
+            tbody.innerHTML = '';
+
+            expenses.forEach((expense, index) => {
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = expense.category;
+                row.insertCell(1).textContent = expense.amount.toLocaleString();
+                
+                const deleteCell = row.insertCell(2);
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.onclick = () => deleteExpense(index);
+                deleteCell.appendChild(deleteBtn);
+            });
+        }
+
+        function calculateExpenses() {
+            if (expenses.length === 0) {
+                alert('Please add some expenses first');
+                return;
+            }
+
+            // Calculate total
+            const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+            
+            // Calculate daily average (assuming 30 days)
+            const dailyAverage = total / 30;
+
+            // Get top 3 expenses
+            const top3 = [...expenses]
+                .sort((a, b) => b.amount - a.amount)
+                .slice(0, 3);
+
+            // Display results
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <h3>Results:</h3>
+                <p><strong>Total Expenses:</strong> $${total.toLocaleString()}</p>
+                <p><strong>Average Daily Expense:</strong> $${dailyAverage.toLocaleString(undefined, {maximumFractionDigits: 2})}</p>
+                <p><strong>Top 3 Expenses:</strong></p>
+                <ol>
+                    ${top3.map(expense => `
+                        <li>${expense.category}: $${expense.amount.toLocaleString()}</li>
+                    `).join('')}
+                </ol>
+            `;
+        }
+
+        // Add sample data
+        const sampleData = [
+            { category: 'Groceries', amount: 15000 },
+            { category: 'Rent', amount: 40000 },
+            { category: 'Transportation', amount: 5000 },
+            { category: 'Entertainment', amount: 10000 },
+            { category: 'Communication', amount: 2000 },
+            { category: 'Gym', amount: 3000 }
+        ];
+
+        expenses = sampleData;
+        updateTable();
+    </script>
+</body>
+</html>
